@@ -34,5 +34,50 @@ namespace vijeoGAPI.Controllers
                 Publisher = "Rockstar Games",
             },
         };
+
+        [HttpGet]
+        public ActionResult<List<VideoGame>> GetVideoGames()
+        {
+            return Ok(videoGames);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        public ActionResult<VideoGame> GetVideoGameById(int id)
+        {
+            var videoGame = videoGames.FirstOrDefault(x => x.Id == id);
+            if (videoGame == null)
+            {
+                return NotFound();
+            }
+            return Ok(videoGame);
+        }
+
+        [HttpPost]
+        public ActionResult<VideoGame> AddVideoGame (VideoGame newGame)
+        {
+            if (newGame == null)
+                return BadRequest();
+
+            newGame.Id = videoGames.Max(x => x.Id) + 1;
+            videoGames.Add(newGame);
+            return CreatedAtAction(nameof(GetVideoGameById), new { id = newGame.Id }, newGame);
+            
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public IActionResult UpdateVideoGame(int id, VideoGame updates)
+        {
+            var game = videoGames.FirstOrDefault(x => x.Id == id);
+            if (game is null)
+                return NotFound();
+            game.Title = updates.Title;
+            game.Platform = updates.Platform;
+            game.Developer = updates.Developer;
+            game.Publisher = updates.Publisher;
+
+            return NoContent();
+        }
     }
 }
