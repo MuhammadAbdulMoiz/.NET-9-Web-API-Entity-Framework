@@ -1,51 +1,28 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using vijeoGAPI.Data;
 
 namespace vijeoGAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VideoGameController : ControllerBase
+    public class VideoGameController(VideoGameDBContext context) : ControllerBase
     {
-        public static List<VideoGame> videoGames = new List<VideoGame>
-        {
-            new VideoGame
-            {
-                Id = 1,
-                Title = "The Legend of Zelda: Breath of the Wild",
-                Platform = "Nintendo Switch",
-                Developer = "Nintendo EPD",
-                Publisher = "Nintendo",
-            },
-            new VideoGame
-            {
-                Id = 2,
-                Title = "God of War",
-                Platform = "PlayStation 4",
-                Developer = "Santa Monica Studio",
-                Publisher = "Sony Interactive Entertainment",
-            },
-            new VideoGame
-            {
-                Id = 3,
-                Title = "Red Dead Redemption 2",
-                Platform = "PS 4",
-                Developer = "Rockstar Studios",
-                Publisher = "Rockstar Games",
-            },
-        };
+        private readonly VideoGameDBContext _context = context;
+
 
         [HttpGet]
-        public ActionResult<List<VideoGame>> GetVideoGames()
+        public async Task<ActionResult<List<VideoGame>>> GetVideoGames()
         {
-            return Ok(videoGames);
+            return Ok(await _context.VideoGames.ToListAsync());
         }
 
         [HttpGet]
         [Route("{id}")]
-        public ActionResult<VideoGame> GetVideoGameById(int id)
+        public async Task<ActionResult<VideoGame>> GetVideoGameById(int id)
         {
-            var videoGame = videoGames.FirstOrDefault(x => x.Id == id);
+            var videoGame = await _context.VideoGames.FindAsync(id);
             if (videoGame == null)
             {
                 return NotFound();
@@ -54,22 +31,22 @@ namespace vijeoGAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult<VideoGame> AddVideoGame (VideoGame newGame)
+        public async Task<ActionResult<VideoGame>> AddVideoGame(VideoGame newGame)
         {
             if (newGame == null)
                 return BadRequest();
 
-            newGame.Id = videoGames.Max(x => x.Id) + 1;
-            videoGames.Add(newGame);
+            _context.VideoGames.Add(newGame);
+            await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetVideoGameById), new { id = newGame.Id }, newGame);
-            
         }
 
         [HttpPut]
         [Route("{id}")]
-        public IActionResult UpdateVideoGame(int id, VideoGame updates)
+        public async Task<IActionResult> UpdateVideoGame(int id, VideoGame updates)
         {
-            var game = videoGames.FirstOrDefault(x => x.Id == id);
+            var game = await _context.VideoGames.FindAsync(id);
             if (game is null)
                 return NotFound();
             game.Title = updates.Title;
@@ -77,20 +54,23 @@ namespace vijeoGAPI.Controllers
             game.Developer = updates.Developer;
             game.Publisher = updates.Publisher;
 
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
         [HttpDelete]
         [Route("{id}")]
-        public IActionResult DeleteVideoGame (int id)
+        public async Task<IActionResult> DeleteVideoGame(int id)
         {
-            var game = videoGames.FirstOrDefault(x => x.Id == id);
+            var game = await _context.VideoGames.FindAsync(id);
             if (game is null)
                 return NotFound();
 
-            videoGames.Remove(game);
+            _context.VideoGames.Remove(game);
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
-
     }
 }
