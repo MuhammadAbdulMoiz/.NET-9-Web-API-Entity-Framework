@@ -1,0 +1,6 @@
+@vijeoGAPI_HostAddress = http://localhost:5064
+
+GET {{vijeoGAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
