@@ -79,5 +79,18 @@ namespace vijeoGAPI.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public IActionResult DeleteVideoGame (int id)
+        {
+            var game = videoGames.FirstOrDefault(x => x.Id == id);
+            if (game is null)
+                return NotFound();
+
+            videoGames.Remove(game);
+            return NoContent();
+        }
+
     }
 }
